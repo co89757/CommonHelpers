@@ -3,7 +3,9 @@
 #include <functional>
 #include <sstream>
 #include <valarray>
-
+#include <stdio.h>
+#include <stdlib.h>
+#include <memory>
 
 namespace colinli
 {
@@ -63,7 +65,6 @@ namespace colinli
 
 		} AssertLevel;
 
-		typedef std::function<void(AssertContext&)> HandlerType;
 
 		class Assert
 		{
@@ -71,18 +72,27 @@ namespace colinli
 			Assert(const Assert& other) = delete;
 			Assert& operator=(const Assert& other) {}
 
-			Assert() {}
-
+			Assert() { }
+			static std::unique_ptr<Assert> pSingle;
 		public:
+			typedef std::function<void(AssertContext&)> HandlerType;
+
 			static const int NUM_LEVELS = 4;
-			static Assert& getAssert()
+
+
+			static Assert& getSingleton()
 			{
-				static Assert singleton;
-				return singleton;
+				if (pSingle)
+					return *pSingle;
+				else
+				{
+					pSingle.reset(new Assert());
+					return *pSingle;
+				}
 			}
 
 
-			~Assert() {}
+			~Assert() { }
 
 			Assert& SMART_ASSERT_A = *this;
 			Assert& SMART_ASSERT_B = *this;
@@ -138,9 +148,10 @@ namespace colinli
 #define SMART_ASSERT_OP(x, next) \
     SMART_ASSERT_A.CaptureLocalVariable((x),#x).SMART_ASSERT_##next 
 
-#define SMART_ASSERT(expr) \
-if (!(expr)) Assert::getAssert().CaptureExpression(#expr).CaptureFileLineContext(__FILE__,__LINE__).SMART_ASSERT_A
+#define ENSURES(expr) \
+if (!(expr)) Assert::getSingleton().CaptureExpression(#expr).CaptureFileLineContext(__FILE__,__LINE__).SMART_ASSERT_A
 
 	}
+
 
 }

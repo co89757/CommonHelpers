@@ -3,8 +3,9 @@
 namespace colinli {
 namespace utility
 {
+	    std::unique_ptr<Assert> Assert::pSingle = nullptr;
 
-		HandlerType Assert::defaultHandler = [&](AssertContext& ctx)
+		Assert::HandlerType Assert::defaultHandler = [&](AssertContext& ctx)
 		{
 
 			std::cout << ctx.Message << "\n";
@@ -12,9 +13,9 @@ namespace utility
 				"Local Variables: " << ctx.PrintContextVariables();
 		};
 
-		std::valarray<HandlerType> Assert::handlers(Assert::defaultHandler, Assert::NUM_LEVELS);
+		std::valarray<Assert::HandlerType> Assert::handlers(Assert::defaultHandler, Assert::NUM_LEVELS);
 
-		void Assert::SetHandler(AssertLevel level, HandlerType _handler)
+		void Assert::SetHandler(AssertLevel level, Assert::HandlerType _handler)
 		{
 			handlers[level] = _handler;
 		}
