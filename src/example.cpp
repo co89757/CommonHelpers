@@ -1,5 +1,6 @@
 #include "SmartAssert.h"
 #include <iostream>
+#include "TimeUtils.h"
 
 using std::cout;
 using namespace colinli::utility;
@@ -19,10 +20,15 @@ void TestAssert()
 	system("pause");
 }
 
+void TestTime()
+{
+	cout<< time::PrintLocalTime();
+}
 
 
 int main()
 {
-	TestAssert();
+	// TestAssert();
+	TestTime();
     
 }
