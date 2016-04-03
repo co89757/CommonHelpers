@@ -2,6 +2,9 @@
 // Created by colin on 3/31/16.
 //
 #include "Common.h"
+#include "TimeUtils.h"
+#include <algorithm>
+#include <iostream>
 
 namespace colinli{
   namespace utility{
@@ -41,10 +44,6 @@ namespace colinli{
      path.insert(path.size(), file_name);
      return path;
     }
-
-
-
-
 
 
 }//end of utility ns

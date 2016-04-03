@@ -4,14 +4,17 @@
 
 #include "ActiveWorker.h"
 #include <memory>
+#include <cstdio>
 using namespace colinli::utility;
 
 ActiveWorker::~ActiveWorker(){
+    printf("ActiveWorker destructor ... \n");
     auto stop_token = [&]() {
         this->finish();
     };
     this->send(stop_token);
     thd.join();
+    printf("ActiveWorker bg thread joined, put to death\n");
 }
 
 

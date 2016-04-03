@@ -1,6 +1,7 @@
 #include "SmartAssert.h"
 #include <iostream>
 #include "TimeUtils.h"
+#include "Logging.h"
 
 using std::cout;
 using namespace colinli::utility;
@@ -14,21 +15,27 @@ void TestAssert()
 			"Local Variables: " << ctx.PrintContextVariables() << "\n";
 	};
 	int j = 1;
-	Assert::SetHandler(DEBUG, debugf);
+	Assert::SetHandler(ASSERT_DEBUG, debugf);
 	ENSURES(i < 0)(i).Debug("integer is negative");
 	ENSURES(j > 3)(j).Debug("integer is not bigger than 3");
-	system("pause");
+	// system("pause");
 }
 
 void TestTime()
 {
-	cout<< time::PrintLocalTime();
+	cout<< time::LocalTimeToString();
 }
 
+void testLog()
+{
+
+  logging::Logging::GetLogger().AddFileHandler("./testlog.log");
+  LOG(DEBUG) << "hello world\n";
+}
 
 int main()
 {
-	// TestAssert();
-	TestTime();
+   testLog();
+//	TestTime();
     
 }

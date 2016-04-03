@@ -28,26 +28,26 @@ namespace utility
 		void Assert::Error(const std::string& msg)
 		{
 			LogMessage(msg);
-			onLevelTriggered(ERROR);
+			onLevelTriggered(ASSERT_ERROR);
 		}
 
 		void Assert::Debug(const std::string& msg)
 		{
 			LogMessage(msg);
-			onLevelTriggered(DEBUG);
+			onLevelTriggered(ASSERT_DEBUG);
 		}
 
 		void Assert::Warning(const std::string& msg)
 		{
 			LogMessage(msg);
-			onLevelTriggered(WARNING);
+			onLevelTriggered(ASSERT_WARNING);
 
 		}
 
 		void Assert::Fatal(const std::string& msg)
 		{
 			LogMessage(msg);
-			onLevelTriggered(FATAL);
+			onLevelTriggered(ASSERT_FATAL);
 
 		}
 

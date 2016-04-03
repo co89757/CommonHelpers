@@ -3,7 +3,7 @@
 namespace colinli{
     namespace utility{
         namespace time{
-
+          static const char* DEFAULT_TIME_FMT = "%F %T";
 
 namespace {
 #define MAX_BUFFER_SIZE 1024
@@ -45,7 +45,7 @@ std::string LocalTimeFormatted(const std::time_t& time_point, const char* time_f
     return putTime(&tm_snapshot, time_format );
 }
 
-std::string PrintLocalTime()
+std::string LocalTimeToString()
 {
     return LocalTimeFormatted(Now(), DEFAULT_TIME_FMT);
 }

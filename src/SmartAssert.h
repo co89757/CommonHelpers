@@ -58,10 +58,10 @@ namespace colinli
 		typedef enum
 		{
 
-			WARNING,
-			DEBUG,
-			ERROR,
-			FATAL
+			ASSERT_WARNING,
+			ASSERT_DEBUG,
+			ASSERT_ERROR,
+			ASSERT_FATAL
 
 		} AssertLevel;
 
@@ -70,7 +70,7 @@ namespace colinli
 		{
 		private:
 			Assert(const Assert& other) = delete;
-			Assert& operator=(const Assert& other) {}
+			Assert& operator=(const Assert& other) = delete;
 
 			Assert() { }
 			static std::unique_ptr<Assert> pSingle;
@@ -151,7 +151,5 @@ namespace colinli
 #define ENSURES(expr) \
 if (!(expr)) Assert::getSingleton().CaptureExpression(#expr).CaptureFileLineContext(__FILE__,__LINE__).SMART_ASSERT_A
 
-	}
-
-
-}
+} // end of utility ns 
+}// end of colinli ns

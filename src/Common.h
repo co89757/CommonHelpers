@@ -1,7 +1,19 @@
 #ifndef COLINLI_COMMON_H_
 #define COLINLI_COMMON_H_ 
 
+#include <string>
 namespace colinli{
+
+  class NonCopyable{
+  public:
+    NonCopyable() { }
+
+  private:
+    NonCopyable(const NonCopyable& ) = delete;
+    NonCopyable& operator=(const NonCopyable& ) = delete;
+  };
+
+
   namespace utility{
     namespace file{
       /**
@@ -17,7 +29,7 @@ namespace colinli{
        * @param  file_name filename
        * @return           fixed-up edition of full path to file 
        */
-      std::string file::pathSanityFix(std::string path, std::string file_name);
+      std::string pathSanityFix(std::string path, std::string file_name);
     }
   }
 }

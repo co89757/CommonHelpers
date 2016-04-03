@@ -1,6 +1,8 @@
 #include <string>
 #include <memory>
 #include <sstream>
+#include <memory>
+#include "ActiveWorker.h"
 
 #ifndef ___PRETTY_FUNCTION__
 #define __PRETTY_FUNCTION__  __FUNCTION__
@@ -19,6 +21,16 @@ namespace colinli{
       } LOG_LEVEL ;
       class LoggerImpl;
 
+      class ALogMessageHandler {
+        public:
+            ALogMessageHandler(){
+
+            }
+            virtual void HandleMessage(const std::string& msg) = 0;
+      
+      };
+
+
       class Logging
       {
         public:
@@ -30,10 +42,12 @@ namespace colinli{
           }
           void AddFileHandler(const std::string & filename);
           void AddStreamHandler(FILE* stream);
-          void AddStreamHandler(std::basic_ostream & stream);
-          void AddCustomHandler(Handler sink);
+          void AddStreamHandler(std::basic_ostream<char> & stream);
+          void AddCustomHandler(ALogMessageHandler *sink);
+          void BroadcastMessage(const std::string & msg);
           std::string GetLevelName();
           void SetLevel(LOG_LEVEL level);
+          ~Logging();
         private:
           Logging(const Logging& ) = delete;
           Logging& operator=(const Logging& ) = delete;
@@ -49,7 +63,7 @@ namespace colinli{
               LogMessage(
                   const std::string& file,
                   const std::string& function,
-                  const std::string& line,
+                  const int line,
                   const std::string& levelname
               );
               void saveMessage(const char* msg_format, ...);
@@ -59,7 +73,7 @@ namespace colinli{
               std::ostringstream oss;
               std::string levelname_;
               std::string function_;
-              std::string line_;
+              int line_;
               std::string file_;
               std::string timestamp_;
               std::string message_;
