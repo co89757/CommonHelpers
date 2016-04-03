@@ -15,9 +15,10 @@
 #define MAX_BUFFER_SIZE 1024
 
 namespace colinli{
-  namespace utility{
-    namespace logging{
-      namespace internal {
+namespace utility{
+namespace logging{
+namespace internal{
+
         bool tryOpenLogFile(const std::string& complete_file_with_path, std::ofstream& outstream) 
         {
           std::ios_base::openmode mode = std::ios_base::out; // for clarity: it's really overkill since it's an ofstream
@@ -61,60 +62,133 @@ namespace colinli{
 
 
 
-      }// end of internal ns 
-    } // end of logging ns 
-  } // end of utility ns 
+}// end of internal ns 
+} // end of logging ns 
+} // end of utility ns 
 } // end of colinli ns 
 
 
 namespace colinli{
-  namespace utility{
-    namespace logging{
+namespace utility{
+namespace logging{
+
       using colinli::utility::time::LocalTime;
       using colinli::utility::time::LocalTimeToString;
       using std::string ;
       using std::cout;
 
 
-      /////////////// ALogMessageHandler ////////////////////////////////////
-      void ALogMessageHandler::sendTaskToBackground(const string & msg)
+      /***************************************************/
+      /************ LogMessage ***************************/  
+
+      void LogMessage::saveMessage(const char *msg_format, ...) 
       {
-        bg_worker_->send(std::bind(&ALogMessageHandler::HandleMessage, this, msg ));
+        char buffer[MAX_BUFFER_SIZE];
+        va_list args;
+          va_start(args, msg_format);
+          int ncharacters = vsnprintf(buffer, sizeof(buffer), msg_format, args);
+          va_end(args);
+          if(ncharacters <= 0){
+            oss << "Failure to parse the message "<<std::endl;
+          }else if(ncharacters > MAX_BUFFER_SIZE){
+            buffer[MAX_BUFFER_SIZE-1] = '\0';
+            oss << buffer <<" ... (the remaining is truncated.\n"<<std::endl;
+          }else{
+             
+            oss << buffer << std::endl;
+          }
+
+        internal::pushMessageToLog(oss.str());
+        oss.str("");
       }
 
-      ALogMessageHandler::~ALogMessageHandler()
+      std::ostringstream & LogMessage::messageStream() {
+        return oss;
+      }
+
+      LogMessage::~LogMessage() {
+        if(!oss.str().empty())
+            internal::pushMessageToLog(oss.str());
+      }
+
+      LogMessage::LogMessage(const std::string &file, const std::string &function, const int line,
+                             const std::string &levelname):
+                             file_(file),
+                             function_(function),
+                             line_(line) 
       {
-        cout <<" ALogMessageHandler starts destruction ...\n";
-        bg_worker_.reset();
+            auto name  = utility::path::GetFilenameFromFullPath(file);
+            oss.fill('0');
+            oss << LocalTimeToString()<<" ["<<levelname<<"] "<<"@"<<name<<":"<<line<<"\t";
+      }
+
+      /************ End of LogMessage *********************/
+
+      /***************************************************/   
+       
+      ALogMessageHandler::~ALogMessageHandler()
+      { 
       }
 
       ////////////////////// END OF ALogMessageHandler ////////////////////
 
 
 
+      //////////////////// FileLogger /////////////////////////////////
 
-
-
+      /**
+       * FileLogger class that logs to given file 
+       */
       class FileLogger: public ALogMessageHandler, private NonCopyable
       {
           public:
               /** default constructor*/
               FileLogger(const string& filepath);
-              virtual void HandleMessage(const std::string &msg);
+              virtual void HandleMessage(const std::string &msg) override;
               ~FileLogger();
           private:
-              // void backgroundWriteToFile(const std::string& msg);
+              void backgroundWriteToFile(const std::string& msg);
               std::ofstream& filestream();
               std::unique_ptr<std::ofstream> pFilestream_;
-              // std::unique_ptr<ActiveWorker> bg_worker_;
+              std::unique_ptr<ActiveWorker> bg_worker_;
       };
 
+      
+      void FileLogger::HandleMessage(const std::string &msg) {
+        std::cout<<"FileLogger::HandleMessage ... \n";
+        bg_worker_->send(std::bind(&FileLogger::backgroundWriteToFile,this, msg) );
+        
+      }
+
+      /** process the log message, the procedure is sent to bg_worker_ for async processing. */
+      void FileLogger::backgroundWriteToFile(const std::string& msg)
+      {
+        std::ofstream& out(filestream());
+        out << msg << std::flush;
+      }
+
+      FileLogger::FileLogger(const string &filepath):
+          pFilestream_(new std::ofstream()),
+          bg_worker_(ActiveWorker::MakeActiveWorker())
+      {
+        if(! internal::tryOpenLogFile(filepath, *pFilestream_)){
+          throw std::runtime_error("Cannot open log file");
+        }
+      }
+      std::ofstream& FileLogger::filestream()
+      {
+        return *(pFilestream_.get());
+      }
+      FileLogger::~FileLogger()
+      {
+        bg_worker_.reset();
+        std::cout<<"FileLogger destructed ... \n";
+      }
+
+      ////////////////END OF FILELOGGER ///////////////////////////
 
 
 
-
-
-      //TODO
       class LoggerImpl
       {
           public:
@@ -145,57 +219,7 @@ namespace colinli{
       };
 
 
-      /***************************************************/
-      /************ LogMessage ***************************/
-
-      //TODO
-      LogMessage::LogMessage() {
-
-      }
-
-      void LogMessage::saveMessage(const char *msg_format, ...) {
-        char buffer[MAX_BUFFER_SIZE];
-        va_list args;
-          va_start(args, msg_format);
-          int ncharacters = vsnprintf(buffer, sizeof(buffer), msg_format, args);
-          va_end(args);
-          if(ncharacters <= 0){
-            oss << "Failure to parse the message "<<std::endl;
-          }else if(ncharacters > MAX_BUFFER_SIZE){
-            buffer[MAX_BUFFER_SIZE-1] = '\0';
-            oss << buffer <<" ... (the remaining is truncated.\n"<<std::endl;
-          }else{
-            buffer[ncharacters] = '\0';
-            oss << buffer;
-          }
-
-        internal::pushMessageToLog(oss.str());
-        oss.str("");
-      }
-
-      std::ostringstream & LogMessage::messageStream() {
-        return oss;
-      }
-
-      LogMessage::~LogMessage() {
-        if(!oss.str().empty())
-            internal::pushMessageToLog(oss.str());
-      }
-
-      LogMessage::LogMessage(const std::string &file, const std::string &function, const int line,
-                             const std::string &levelname):
-                             file_(file),
-                             function_(function),
-                             line_(line) 
-      {
-            auto name  = utility::path::GetFilenameFromFullPath(file);
-            oss.fill('0');
-            oss << LocalTimeToString()<<" ["<<levelname<<"] "<<"@"<<name<<":"<<line<<"\t";
-      }
-
-      /************ End of LogMessage *********************/
-
-      /***************************************************/
+      
 
 
 
@@ -244,64 +268,32 @@ namespace colinli{
       /******************** End of Logging **************************/
       /**************************************************************/
 
-      //////////// FILE LOGGER //////////////////////////////////////
-      void FileLogger::HandleMessage(const std::string &msg) {
-        std::cout<<"FileLogger::HandleMessage ... \n";
-        // bg_worker_->send(std::bind(&FileLogger::backgroundWriteToFile,this, msg) );
-        std::ofstream& out(filestream());
-        out << msg << std::flush;
-      }
-
-      FileLogger::FileLogger(const string &filepath):
-          ALogMessageHandler(),
-          pFilestream_(new std::ofstream())
-          // bg_worker_(ActiveWorker::MakeActiveWorker())
-
-      {
-        if(! internal::tryOpenLogFile(filepath, *pFilestream_)){
-          throw std::runtime_error("Cannot open log file");
-        }
-      }
-      std::ofstream& FileLogger::filestream()
-      {
-        return *(pFilestream_.get());
-      }
-      FileLogger::~FileLogger()
-      {
-         // IMPORTANT: make sure the file stream's lifetime outlasts the bg workers for the backlogged file-write tasks
-         // to finish 
-        // bg_worker_.reset();
-        std::cout<<"FileLogger destructed ... \n";
-      }
-
-      // void FileLogger::backgroundWriteToFile(const std::string& msg)
-      // {
-      //   std::ofstream& out(filestream());
-      //   out << msg << std::flush;
-      // }
-
-      ////////////////END OF FILELOGGER ///////////////////////////
+     
 
       /////////////// LoggerImpl //////////////////////////////////
 
-      void LoggerImpl::AddFileHandler(const std::string &filepath) {
+      void LoggerImpl::AddFileHandler(const std::string &filepath) 
+      {
         pFileLogger_.reset(new FileLogger(filepath));
         handlers_.push_back( pFileLogger_.get() );
       }
 
 
 
-      void LoggerImpl::BroadcastMessage(const std::string &msg) {
+      void LoggerImpl::BroadcastMessage(const std::string &msg) 
+      {
         std::cout<<"Logger:Broadcast msg...\n";
         std::for_each(handlers_.begin(), handlers_.end(), [&](ALogMessageHandler* worker){
             worker->HandleMessage(msg);
         });
       }
-      void LoggerImpl::AddCStreamHandler(FILE *stream) {
+      void LoggerImpl::AddCStreamHandler(FILE *stream) 
+      {
 
       }
 
-      void LoggerImpl::AddStreamHandler(std::basic_ostream<char> &stream) {
+      void LoggerImpl::AddStreamHandler(std::basic_ostream<char> &stream) 
+      {
 
       }
 

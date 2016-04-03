@@ -31,6 +31,8 @@ void testLog()
 
   logging::Logging::GetLogger().AddFileHandler("./testlog.log");
   LOG(DEBUG) << "hello world\n";
+  const char* greet = "greetings from colin";
+  LOGF(DEBUG, "GREETING: %s", greet);
 }
 
 int main()

@@ -1,19 +1,11 @@
 #include "TimeUtils.h"
 
 namespace colinli{
-    namespace utility{
-        namespace time{
-          static const char* DEFAULT_TIME_FMT = "%F %T";
-
-class Constants
-{
-public:
-  constexpr static const char* DefaultDateTimeFormat = "%F %T";
-private:
-  Constants(){}
-};
+namespace utility{
+namespace time{
 
 
+static const char* DEFAULT_TIME_FMT = "%F %T";
 
 namespace {
 #define MAX_BUFFER_SIZE 1024
@@ -62,7 +54,7 @@ std::string LocalTimeToString()
 
 
 
-}
-}
-}
+}// end of time ns
+}// end of utility ns
+}// end of colinli ns
 

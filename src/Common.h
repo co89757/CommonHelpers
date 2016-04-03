@@ -2,16 +2,30 @@
 #define COLINLI_COMMON_H_ 
 
 #include <string>
+
+
+
+
 namespace colinli{
 
-  class NonCopyable{
-  public:
-    NonCopyable() { }
+    class Constants
+    {
+    public:
+        static constexpr const char* DEFAULT_TIME_FORMAT = "%F %T";
+        static constexpr int MAX_BUFFER_SIZE = 1024;
 
-  private:
-    NonCopyable(const NonCopyable& ) = delete;
-    NonCopyable& operator=(const NonCopyable& ) = delete;
-  };
+    };
+
+
+
+      class NonCopyable{
+      public:
+        NonCopyable() { }
+
+      private:
+        NonCopyable(const NonCopyable& ) = delete;
+        NonCopyable& operator=(const NonCopyable& ) = delete;
+      };
 
 } // end of colinli ns 
 

@@ -10,8 +10,8 @@
 
 
 namespace colinli{
-  namespace utility{
-    namespace logging{
+namespace utility{
+namespace logging{
 
       typedef enum {
         INFO = 1,
@@ -21,18 +21,18 @@ namespace colinli{
       } LOG_LEVEL ;
       class LoggerImpl;
 
+      /**
+       * base abstract class that encapuslates the behavior of an async log worker of given sink method
+       */
       class ALogMessageHandler {
         public:
-            ALogMessageHandler():bg_worker_(ActiveWorker::MakeActiveWorker())
-            {
-
-            }
             virtual void HandleMessage(const std::string& msg) = 0;
+            /** send the HandleMessage task down to background worker */
+            // void SendLogTaskToBackground(const std::string& msg);
             virtual ~ALogMessageHandler();
-        protected:
-          /** send the HandleMessage task down to background worker */
-          void sendTaskToBackground(const std::string& msg);
-          std::unique_ptr<ActiveWorker> bg_worker_;
+        // protected:
+          
+        //   std::unique_ptr<ActiveWorker> bg_worker_;
       
       };
 
@@ -61,11 +61,14 @@ namespace colinli{
           std::unique_ptr<LoggerImpl> pimpl;
       };
 
+      /**
+       * LogMessage class is responsible for reformatting the log message
+       */
       class LogMessage
       {
           public:
-              /** default constructor*/
-              LogMessage();
+               
+              
               LogMessage(
                   const std::string& file,
                   const std::string& function,
@@ -86,9 +89,9 @@ namespace colinli{
 
       };
 
-    }
-  }
-}
+} // end of logging ns 
+} // end of utility ns
+} // end of colinli ns 
 
 /** public macros */
 #define LOG_INFO colinli::utility::logging::\
@@ -104,4 +107,4 @@ LogMessage(__FILE__, __PRETTY_FUNCTION__, __LINE__, "WARNING" )
 LogMessage(__FILE__, __PRETTY_FUNCTION__, __LINE__, "ERROR" )
 
 #define LOG(level) LOG_##level.messageStream()
-#define LOG_FMT(level, string_format, ...) LOG_##level.saveMessage(string_format, ##__VA_ARGS__)
+#define LOGF(level, string_format, ...) LOG_##level.saveMessage(string_format, ##__VA_ARGS__)
