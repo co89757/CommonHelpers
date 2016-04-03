@@ -23,10 +23,16 @@ namespace colinli{
 
       class ALogMessageHandler {
         public:
-            ALogMessageHandler(){
+            ALogMessageHandler():bg_worker_(ActiveWorker::MakeActiveWorker())
+            {
 
             }
             virtual void HandleMessage(const std::string& msg) = 0;
+            virtual ~ALogMessageHandler();
+        protected:
+          /** send the HandleMessage task down to background worker */
+          void sendTaskToBackground(const std::string& msg);
+          std::unique_ptr<ActiveWorker> bg_worker_;
       
       };
 
@@ -71,11 +77,11 @@ namespace colinli{
               ~LogMessage();
           private:
               std::ostringstream oss;
-              std::string levelname_;
+              std::string levelname_;              
+              std::string file_;
               std::string function_;
               int line_;
-              std::string file_;
-              std::string timestamp_;
+              std::string datetime_format_;
               std::string message_;
 
       };

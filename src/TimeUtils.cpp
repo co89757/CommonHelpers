@@ -5,6 +5,16 @@ namespace colinli{
         namespace time{
           static const char* DEFAULT_TIME_FMT = "%F %T";
 
+class Constants
+{
+public:
+  constexpr static const char* DefaultDateTimeFormat = "%F %T";
+private:
+  Constants(){}
+};
+
+
+
 namespace {
 #define MAX_BUFFER_SIZE 1024
 
