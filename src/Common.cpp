@@ -6,6 +6,6 @@
 #include <algorithm>
 #include <iostream>
 
-namespace colinli{
-  
-}// end of colinli ns 
+namespace colinli {
+
+}  // end of colinli ns

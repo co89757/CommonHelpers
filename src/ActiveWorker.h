@@ -10,35 +10,31 @@
 #include <functional>
 #include "BlockQueue.h"
 
-namespace colinli
-{
-    namespace utility
-    {
-        typedef std::function<void()> Callback;
+namespace colinli {
+namespace utility {
+typedef std::function<void()> Callback;
 
+class ActiveWorker {
+ private:
+  std::thread thd;
+  ActiveWorker() {}
+  ActiveWorker(const ActiveWorker&) = delete;
+  ActiveWorker& operator=(const ActiveWorker&) = delete;
+  bool done = false;
+  void run();
+  // token action to finish the work
+  void finish() { done = true; }
+  BlockQueue<Callback> queue;
 
-        class ActiveWorker {
-        private:
-            std::thread thd;
-            ActiveWorker(){}
-            ActiveWorker(const ActiveWorker&) = delete;
-            ActiveWorker&  operator=(const ActiveWorker&) = delete;
-            bool done = false;
-            void run();
-            // token action to finish the work
-            void finish(){
-                done = true;
-            }
-            BlockQueue<Callback> queue;
-        public:
-            virtual ~ActiveWorker();
-            void send(Callback task);
+ public:
+  virtual ~ActiveWorker();
+  void send(Callback task);
 
-            static std::unique_ptr<ActiveWorker> MakeActiveWorker();
+  static std::unique_ptr<ActiveWorker> MakeActiveWorker();
 
-        };
+};
 
-    }
+}
 }
 
-#endif //PROJECT_ACTIVEWORKER_H
+#endif  //PROJECT_ACTIVEWORKER_H
